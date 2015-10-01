@@ -13,6 +13,8 @@ namespace MoonWalker
             //try
             //{
                 Output output = new Output();
+                Control control = new Control();
+                control.main(Input.Main());
                 output.main(Input.Main());
 
                 Console.ReadKey();
