@@ -10,6 +10,7 @@ namespace MoonWalker
     {
         public void main(Action action)
         {
+            // Выводим на экран действие
             Console.WriteLine(action);
         }
 

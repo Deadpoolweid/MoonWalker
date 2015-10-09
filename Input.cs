@@ -17,11 +17,17 @@ namespace MoonWalker
         static public Data main()
         {
             Contract.Ensures(Contract.Result<Data>() != null);
+            // Создаём экземпляр хранилища данных
             Data data = new Data();
+            // Считываем первую строчку
             string[] line = ReadFirst();
+            // Сохраняем координаты из первой строчки в хранилище
             data.XY = GetCoord(line);
+            // Сохраняем направление из первой строчки в хранилище
             data.d = GetDirection(line);
+            // Считываем карту видимости лунохода
             data.map = GetMap(ReadMap());
+            // Отправляем хранилище с данными для дальнейшей обработки
             return data;
         }
 
@@ -107,6 +113,7 @@ namespace MoonWalker
         static Coord GetCoord(string[] line)
         {
             Contract.Ensures(Contract.Result<Coord>() != null);
+            Contract.Ensures(Math.Abs(int.Parse(line[0]))<1000 && Math.Abs(int.Parse(line[1]))<1000, "Значения координат находятся за пределами допустимых.\n");
             Coord coord = new Coord(int.Parse(line[0]),int.Parse(line[1]));
             return coord;
         }

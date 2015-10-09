@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MoonWalker
@@ -10,24 +11,25 @@ namespace MoonWalker
     {
         static void Main(string[] args)
         {
-            //try
-            //{
+            Start:
+            try
+            {
                 Output output = new Output();
                 Control control = new Control();
                 output.main(control.main(Input.main()));
-
                 Console.ReadKey();
-            //}
-            //catch (Exception e)
-            //{
+            }
+            catch (Exception e)
+            {
 
 
-            //    Console.WriteLine("Возникла ошибка!");
+                Console.WriteLine("Возникла ошибка!");
 
-            //    Console.WriteLine(e.Message);
-            //    Console.ReadKey();
-            //    throw;
-            //}
+                Console.WriteLine(e.Message);
+                Console.ReadKey();
+            }
+            Console.Clear();
+            goto Start;
         }
     }
 }
