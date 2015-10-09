@@ -14,7 +14,7 @@ namespace MoonWalker
         /// Запрашивает данные у пользователя и записывает их в хранилище
         /// </summary>
         /// <returns>Экземпляр хранилища данных</returns>
-        static public Data Main()
+        static public Data main()
         {
             Contract.Ensures(Contract.Result<Data>() != null);
             Data data = new Data();

@@ -10,18 +10,76 @@ namespace MoonWalker
     {
         private Obstacle[] CurrentLocation = new Obstacle[4];
 
-        public void main(Data data)
+        public Action main(Data data)
         {
             SetLocation(data.map);
             Coord xy = data.XY;
             Direction direction = DetectDirection(DetectDirections(DetectQuarter(xy)));
+            return ChooseAction(data,direction);
+        }
+
+        static Action ChooseAction(Data data, Direction d)
+        {
+            if (data.d == Direction.Up)
+            {
+                switch ((int) d)
+                {
+                    case 1:
+                        return Action.B;
+                    case 2:
+                        return Action.L;
+                    case 3:
+                        return Action.R;
+                }
+            }
+            else if (data.d == Direction.Down)
+            {
+                switch ((int) d)
+                {
+                    case 0:
+                        return Action.B;
+                    case 2:
+                        return Action.R;
+                    case 3:
+                        return Action.L;
+                }
+            }
+            else if (data.d == Direction.Left)
+            {
+                switch ((int) d)
+                {
+                    case 0:
+                        return Action.R;
+                    case 1:
+                        return Action.L;
+                    case 3:
+                        return Action.B;
+                }
+            }
+            else if (data.d == Direction.Right)
+            {
+                switch ((int) d)
+                {
+                    case 0:
+                        return Action.L;
+                    case 1:
+                        return Action.R;
+                    case 2:
+                        return Action.B;
+                }
+            }
+            else if (data.d == Direction.Unknown)
+            {
+                throw new ArgumentException("Направильно задано начальное направление.");
+            }
+            return Action.F;
         }
 
         /// <summary>
         /// Создаёт карту с единичным радиусом видимости
         /// </summary>
         /// <param name="map">Исходная карта</param>
-        void SetLocation(Obstacle[,] map)
+        private void SetLocation(Obstacle[,] map)
         {
             // верх
             CurrentLocation[0] = map[8, 7];
@@ -38,7 +96,7 @@ namespace MoonWalker
         /// </summary>
         /// <param name="q">Четверть, в которой находится луноход</param>
         /// <returns>Направление движения</returns>
-        Direction[] DetectDirections(Quarter q)
+        private Direction[] DetectDirections(Quarter q)
         {
             Direction[] dir = new Direction[4];
 
@@ -48,25 +106,25 @@ namespace MoonWalker
                     dir = new[] {Direction.Left, Direction.Up, Direction.Right, Direction.Down};
                     break;
                 case Quarter.Second:
-                    dir = new[] { Direction.Left, Direction.Down, Direction.Right, Direction.Up };
+                    dir = new[] {Direction.Left, Direction.Down, Direction.Right, Direction.Up};
                     break;
                 case Quarter.F_S:
-                    dir = new[] { Direction.Left, Direction.Up, Direction.Down, Direction.Right};
+                    dir = new[] {Direction.Left, Direction.Up, Direction.Down, Direction.Right};
                     break;
                 case Quarter.Third:
-                    dir = new[] { Direction.Right, Direction.Down, Direction.Left, Direction.Up };
+                    dir = new[] {Direction.Right, Direction.Down, Direction.Left, Direction.Up};
                     break;
                 case Quarter.S_T:
-                    dir = new[] { Direction.Down, Direction.Left, Direction.Right, Direction.Up };
+                    dir = new[] {Direction.Down, Direction.Left, Direction.Right, Direction.Up};
                     break;
                 case Quarter.Fourth:
-                    dir = new[] { Direction.Right, Direction.Up, Direction.Left, Direction.Down };
+                    dir = new[] {Direction.Right, Direction.Up, Direction.Left, Direction.Down};
                     break;
                 case Quarter.T_Fth:
-                    dir = new[] { Direction.Right, Direction.Up, Direction.Down, Direction.Left };
+                    dir = new[] {Direction.Right, Direction.Up, Direction.Down, Direction.Left};
                     break;
                 case Quarter.Fth_F:
-                    dir = new[] { Direction.Up, Direction.Left, Direction.Right, Direction.Down };
+                    dir = new[] {Direction.Up, Direction.Left, Direction.Right, Direction.Down};
                     break;
                 case Quarter.Nexus:
                     dir = null;
@@ -82,7 +140,7 @@ namespace MoonWalker
         /// </summary>
         /// <param name="directions">приоритетный список направлений передвижения</param>
         /// <returns>оптимальное направление движения</returns>
-        Direction DetectDirection(Direction[] directions)
+        private Direction DetectDirection(Direction[] directions)
         {
             for (int i = 0; i < 4; i++)
             {
@@ -99,7 +157,7 @@ namespace MoonWalker
         /// </summary>
         /// <param name="xy">Координаты точки</param>
         /// <returns>Четверть, в которой находится точка</returns>
-        Quarter DetectQuarter(Coord xy)
+        private Quarter DetectQuarter(Coord xy)
         {
             int x = xy.X;
             int y = xy.Y;
@@ -110,45 +168,33 @@ namespace MoonWalker
                 {
                     return Quarter.Second;
                 }
-                else if (y < 0)
+                if (y < 0)
                 {
                     return Quarter.First;
                 }
-                else
-                {
-                    return Quarter.F_S;
-                }
+                return Quarter.F_S;
             }
-            else if (x < 0)
+            if (x < 0)
             {
                 if (y > 0)
                 {
                     return Quarter.Third;
                 }
-                else if (y < 0)
+                if (y < 0)
                 {
                     return Quarter.Fourth;
                 }
-                else
-                {
-                    return Quarter.T_Fth;
-                }
+                return Quarter.T_Fth;
             }
-            else
+            if (y > 0)
             {
-                if (y > 0)
-                {
-                    return Quarter.S_T;
-                }
-                else if (y < 0)
-                {
-                    return Quarter.Fth_F;
-                }
-                else
-                {
-                    return Quarter.Nexus;
-                }
+                return Quarter.S_T;
             }
+            if (y < 0)
+            {
+                return Quarter.Fth_F;
+            }
+            return Quarter.Nexus;
         }
 
         /// <summary>
@@ -156,24 +202,21 @@ namespace MoonWalker
         /// </summary>
         /// <param name="direction">Направление движения</param>
         /// <returns>Возможность двигаться</returns>
-        bool CanMove(Direction direction)
+        private bool CanMove(Direction direction)
         {
-            var checkingPlace = (int)direction;
+            var checkingPlace = (int) direction;
             if (CurrentLocation[checkingPlace] == Obstacle.Empty)
             {
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
     }
 
     /// <summary>
     /// Четверть координатной плоскости
     /// </summary>
-    enum Quarter
+    internal enum Quarter
     {
         First = 1,
         Second,

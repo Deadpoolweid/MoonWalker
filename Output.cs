@@ -8,13 +8,18 @@ namespace MoonWalker
 {
     class Output
     {
-        public void main(Data data)
+        public void main(Action action)
+        {
+            Console.WriteLine(action);
+        }
+
+        public void main(Data data, bool v)
         {
             Console.WriteLine();
-            Console.WriteLine("Координаты лунохода: ({0};{1})", data.XY.X,data.XY.Y);
+            Console.WriteLine("Координаты лунохода: ({0};{1})", data.XY.X, data.XY.Y);
             Console.WriteLine("Направление движения: {0}", data.d);
             Console.WriteLine("Карта: ");
-            int x = 0, y;
+            int x = 0;
             foreach (var VARIABLE in data.map)
             {
                 if (x == 14)

@@ -14,8 +14,7 @@ namespace MoonWalker
             //{
                 Output output = new Output();
                 Control control = new Control();
-                control.main(Input.Main());
-                output.main(Input.Main());
+                output.main(control.main(Input.main()));
 
                 Console.ReadKey();
             //}

@@ -43,4 +43,15 @@ namespace MoonWalker
         Right = 3,
         Unknown = 4
     }
+
+    /// <summary>
+    /// Действие лунохода (Вперёд, назад, поворот направо, поворот налево)
+    /// </summary>
+    public enum Action
+    {
+        B,
+        F,
+        L,
+        R
+    }
 }
