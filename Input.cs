@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
 
 namespace MoonWalker
 {
     /// <summary>
     /// Ввод данных
     /// </summary>
-    public class Input
+    public static class Input
     {
         /// <summary>
         /// Запрашивает данные у пользователя и записывает их в хранилище
         /// </summary>
         /// <returns>Экземпляр хранилища данных</returns>
-        static public Data main()
+        static public Data Core()
         {
             Contract.Ensures(Contract.Result<Data>() != null);
             // Создаём экземпляр хранилища данных
@@ -24,9 +23,9 @@ namespace MoonWalker
             // Сохраняем координаты из первой строчки в хранилище
             data.XY = GetCoord(line);
             // Сохраняем направление из первой строчки в хранилище
-            data.d = GetDirection(line);
+            data.D = GetDirection(line);
             // Считываем карту видимости лунохода
-            data.map = GetMap(ReadMap());
+            data.Map = GetMap(ReadMap());
             // Отправляем хранилище с данными для дальнейшей обработки
             return data;
         }
@@ -45,7 +44,7 @@ namespace MoonWalker
                 rez = Array.ConvertAll(line.Split(' '), Convert.ToString);
             }
 
-            if (rez.Count() > 3)
+            if (rez.Length > 3)
             {
                 throw new ArgumentException("Неправильный ввод.");
             }
@@ -71,7 +70,7 @@ namespace MoonWalker
             }
 
 
-            if (rez.Count() > 15 && rez.Count() < 15)
+            if (rez.Length > 15 && rez.Length < 15)
             {
                 throw new ArgumentException("Неправильный ввод.");
             }
@@ -187,7 +186,7 @@ namespace MoonWalker
                     }
                     else
                     {
-                        throw new ArgumentException("В области видимости присутствуют недопустимые символы: " + obstacles[j, i].ToString());
+                        throw new ArgumentException("В области видимости присутствуют недопустимые символы: " + obstacles[j, i]);
                     }
                 }
             }

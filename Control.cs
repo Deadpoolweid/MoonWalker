@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MoonWalker
 {
@@ -11,27 +9,31 @@ namespace MoonWalker
         /// <summary>
         /// Карта видимости
         /// </summary>
-        private Obstacle[,] map = new Obstacle[15,15];
+        private Obstacle[,] _map = new Obstacle[15,15];
 
-        private Coord StartPosition;
+        private Coord _startPosition;
 
+/*
         /// <summary>
         /// Есть ли финиш в области видимости
         /// </summary>
         private bool FinishIsOnHorizont;
+*/
 
         /// <summary>
         /// Список точек, путешествие в которые невозможно
         /// </summary>
-        private List<Coord> BlackList = new List<Coord>(); 
+        // ReSharper disable once InconsistentNaming
+        private readonly List<Coord> BlackList = new List<Coord>(); 
 
+        // ReSharper disable once InconsistentNaming
         public Action main(Data data)
         {
             if (data == null) throw new ArgumentNullException(nameof(data));
-            StartPosition = data.XY;
-            SetLocation(data.map);
+            _startPosition = data.XY;
+            SetLocation(data.Map);
 
-            BlackList.Add(StartPosition);
+            BlackList.Add(_startPosition);
             //// В единицу времени важен только обзор на одну клетку вперёд, поэтому
             //// Получаем список препятствий, находящихся непосредственно рядом
 
@@ -80,7 +82,7 @@ namespace MoonWalker
         /// <returns>Действие</returns>
         static Action ChooseAction(Data data, Direction d)
         {
-            if (data.d == Direction.Up)
+            if (data.D == Direction.Up)
             {
                 switch ((int) d)
                 {
@@ -92,7 +94,7 @@ namespace MoonWalker
                         return Action.B;
                 }
             }
-            else if (data.d == Direction.Left)
+            else if (data.D == Direction.Left)
             {
                 switch ((int) d)
                 {
@@ -104,7 +106,7 @@ namespace MoonWalker
                         return Action.L;
                 }
             }
-            else if (data.d == Direction.Right)
+            else if (data.D == Direction.Right)
             {
                 switch ((int) d)
                 {
@@ -116,7 +118,7 @@ namespace MoonWalker
                         return Action.R;
                 }
             }
-            else if (data.d == Direction.Down)
+            else if (data.D == Direction.Down)
             {
                 switch ((int) d)
                 {
@@ -128,7 +130,7 @@ namespace MoonWalker
                         return Action.L;
                 }
             }
-            else if (data.d == Direction.Unknown)
+            else if (data.D == Direction.Unknown)
             {
                 throw new ArgumentException("Направильно задано начальное направление.");
             }
@@ -141,9 +143,10 @@ namespace MoonWalker
         /// <param name="map">Исходная карта</param>
         private void SetLocation(Obstacle[,] map)
         {
-            this.map = map;
+            _map = map;
         }
 
+/*
         /// <summary>
         /// Расчитывает приоритетный список точек, ближайших или являющихся центром координат
         /// </summary>
@@ -187,7 +190,9 @@ namespace MoonWalker
             }
             return points.ToArray();
         }
+*/
 
+/*
         /// <summary>
         /// Создаёт список возможных точек B из карты видимости
         /// </summary>
@@ -203,7 +208,7 @@ namespace MoonWalker
             {
                 for (int j = x_for-1; j < x_to-1; j++)
                 {
-                    if (map[j, i] == Obstacle.Empty)
+                    if (_map[j, i] == Obstacle.Empty)
                     {
                         points.Add(new Coord(j, i));
                     }
@@ -211,6 +216,7 @@ namespace MoonWalker
             }
             return points;
         }
+*/
 
         /// <summary>
         /// Рассчитывает расстояние в клетках, которое необходимо пройти с указанной точки до финиша
@@ -224,36 +230,37 @@ namespace MoonWalker
 
         private Direction CalculateDirection()
         {
-            PointInfo startInfo = new PointInfo(CalculateRadius(StartPosition), 0);
-            Coord startCoord = StartPosition;
+            PointInfo startInfo = new PointInfo(CalculateRadius(_startPosition), 0);
+            Coord startCoord = _startPosition;
 
             // Ближайшие к луноходу точки
-            Coord[] _points = new Coord[4];
+            Coord[] points = new Coord[4];
             for (int i = 0; i < 4; i++)
             {
                 //Up
-                _points[0] = new Coord(startCoord.X, startCoord.Y + 1);
+                points[0] = new Coord(startCoord.X, startCoord.Y + 1);
                 //Left
-                _points[1] = new Coord(startCoord.X - 1, startCoord.Y);
+                points[1] = new Coord(startCoord.X - 1, startCoord.Y);
                 //Right
-                _points[2] = new Coord(startCoord.X + 1, startCoord.Y);
+                points[2] = new Coord(startCoord.X + 1, startCoord.Y);
                 //Down
-                _points[3] = new Coord(startCoord.X, startCoord.Y - 1);
+                points[3] = new Coord(startCoord.X, startCoord.Y - 1);
             }
 
             // Добавление надёжных точек в возможный план маршрута
-            List<Coord> OneBlockVision = _points.Where(coord => IsFree(coord)).ToList();
+            List<Coord> oneBlockVision = points.Where(IsFree).ToList();
 
-            PointInfo[] Infos = new PointInfo[OneBlockVision.Count];
-            for (int i = 0; i < Infos.Count(); i++)
+            PointInfo[] infos = new PointInfo[oneBlockVision.Count];
+            for (int i = 0; i < infos.Length; i++)
             {
-                Infos[i] = new PointInfo(CalculateRadius(OneBlockVision[i]),startInfo.MoveCost);
+                infos[i] = new PointInfo(CalculateRadius(oneBlockVision[i]),startInfo.MoveCost);
             }
 
             int min = 2001;
             int k = 0;
+            // ReSharper disable once InconsistentNaming
             int min_k = 5;
-            foreach (var inf in Infos)
+            foreach (var inf in infos)
             {
                 int cost = inf.CalculateCost();
                 //if (cost == min)
@@ -265,7 +272,7 @@ namespace MoonWalker
                 //}
                 if (cost < min)
                 {
-                    if (BlackList.Contains(_points[k]))
+                    if (BlackList.Contains(points[k]))
                     {
                         k++;
                         continue;
@@ -276,10 +283,11 @@ namespace MoonWalker
                 k++;
             }
             Direction d = (Direction)min_k;
-            BlackList.Add(_points[min_k]);
+            BlackList.Add(points[min_k]);
             return  d;
         }
 
+/*
         /// <summary>
         /// Распознаёт четверть координатной плоскости по полученным координатам точки
         /// </summary>
@@ -324,18 +332,21 @@ namespace MoonWalker
             }
             return Quarter.Nexus;
         }
+*/
 
         /// <summary>
         /// Проверяет можно ли двигаться в указанном направлении
         /// </summary>
-        /// <param name="direction">Направление движения</param>
+        /// <param name="point">Предполагаемая точка</param>
         /// <returns>Возможность двигаться</returns>
         private bool IsFree(Coord point)
         {
-            Coord PointLocation = CalculateMapLocation(point, StartPosition);
-            return map[PointLocation.X - 1, PointLocation.Y - 1] == Obstacle.Empty;
+            Coord pointLocation = CalculateMapLocation(point, _startPosition);
+            if (pointLocation == null) throw new ArgumentNullException(nameof(pointLocation));
+            return _map[pointLocation.X - 1, pointLocation.Y - 1] == Obstacle.Empty;
         }
 
+/*
         /// <summary>
         ///  Создаёт список точек, местонахождение в которых невозможно
         /// </summary>
@@ -346,14 +357,16 @@ namespace MoonWalker
             {
                 for (int j = 0; j < 15; j++)
                 {
-                    if (map[j, i] == Obstacle.Hole || map[j, i] == Obstacle.Mooners || map[j, i] == Obstacle.Rock)
+                    if (_map[j, i] == Obstacle.Hole || _map[j, i] == Obstacle.Mooners || _map[j, i] == Obstacle.Rock)
                     {
                         BlackList.Add(CalculateCoord(j+1,i+1,startCoord));
                     }
                 }
             }
         }
+*/
 
+/*
         /// <summary>
         /// Считает координаты точки по указанным данным из области видимости
         /// </summary>
@@ -365,6 +378,7 @@ namespace MoonWalker
         {
             return new Coord(start.X+(x-8), start.Y - (y-8));
         }
+*/
 
         /// <summary>
         /// Считает положение точки на карте видимости по указанным координатам
@@ -378,6 +392,7 @@ namespace MoonWalker
         }
     }
 
+/*
     /// <summary>
     /// Четверть координатной плоскости
     /// </summary>
@@ -393,32 +408,7 @@ namespace MoonWalker
         Fth_F,
         Nexus = 0
     }
-
-    class PointInfo
-    {
-        // Цена за передвижение на данную клетку
-        public int MoveCost;
-
-        // Цена за достижение финиша(без учёта преград)
-        private int FinishCost;
-
-        /// <summary>
-        /// Создаёт новую информацию о точке
-        /// </summary>
-        /// <param name="ThisPointRadius">Радиус новой точки</param>
-        /// <param name="StartPointMoveCost">Стоимость передвижения стартовой точки</param>
-        public PointInfo(int ThisPointRadius, int StartPointMoveCost)
-        {
-            this.MoveCost = StartPointMoveCost + 1;
-            this.FinishCost = ThisPointRadius;
-        }
-
-        public int CalculateCost()
-        {
-            return MoveCost + FinishCost;
-        }
-    }
-
+*/
 }
 
 

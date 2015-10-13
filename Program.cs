@@ -1,22 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MoonWalker
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             Start:
             try
             {
                 Output output = new Output();
                 Control control = new Control();
-                output.main(control.main(Input.main()));
+                output.main(control.main(Input.Core()));
                 Console.ReadKey();
             }
             catch (Exception e)

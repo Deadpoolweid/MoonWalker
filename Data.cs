@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MoonWalker
+﻿namespace MoonWalker
 {
     public class Data
     {
@@ -16,12 +10,12 @@ namespace MoonWalker
         /// <summary>
         /// Карта луны(в пределах видимости)
         /// </summary>
-        public Obstacle[,] map = new Obstacle[15,15];
+        public Obstacle[,] Map = new Obstacle[15,15];
 
         /// <summary>
         /// Направление движения
         /// </summary>
-        public Direction d;
+        public Direction D;
     }
 
     /// <summary>
