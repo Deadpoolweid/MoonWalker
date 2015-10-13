@@ -18,6 +18,9 @@ namespace MoonWalker
         /// </summary>
         public Obstacle[,] map = new Obstacle[15,15];
 
+        /// <summary>
+        /// Направление движения
+        /// </summary>
         public Direction d;
     }
 
@@ -38,9 +41,9 @@ namespace MoonWalker
     public enum Direction
     {
         Up = 0,
-        Down = 1,
-        Left = 2,
-        Right = 3,
+        Left = 1,
+        Right = 2,
+        Down = 3,
         Unknown = 4
     }
 

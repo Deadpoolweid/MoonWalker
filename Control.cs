@@ -8,22 +8,76 @@ namespace MoonWalker
 {
     class Control
     {
-        private Obstacle[] CurrentLocation = new Obstacle[4];
+        /// <summary>
+        /// Карта видимости
+        /// </summary>
+        private Obstacle[,] map = new Obstacle[15,15];
+
+        private Coord StartPosition;
+
+        /// <summary>
+        /// Есть ли финиш в области видимости
+        /// </summary>
+        private bool FinishIsOnHorizont;
+
+        /// <summary>
+        /// Список точек, путешествие в которые невозможно
+        /// </summary>
+        private List<Coord> BlackList = new List<Coord>(); 
 
         public Action main(Data data)
         {
-            // В единицу времени важен только обзор на одну клетку вперёд, поэтому
-            // Получаем список препятствий, находящихся непосредственно рядом
+            if (data == null) throw new ArgumentNullException(nameof(data));
+            StartPosition = data.XY;
             SetLocation(data.map);
-            Coord xy = data.XY;
-            // Определяем четверть местонахождения лунохода,
-            // Определяем список направлений, бережно расставленных по приоритетам от Наилучшего к наихудшему
-            // Определяем оптимальное направление из указанного списка
-            Direction direction = DetectDirection(DetectDirections(DetectQuarter(xy)));
+
+            BlackList.Add(StartPosition);
+            //// В единицу времени важен только обзор на одну клетку вперёд, поэтому
+            //// Получаем список препятствий, находящихся непосредственно рядом
+
+            //Coord xy = data.XY;
+
+            ////DetectBlackList(xy);
+            //// Определяем, находится ли точка финиша в зоне видимости
+            //FinishIsOnHorizont = Math.Abs(xy.X) < 16 && Math.Abs(xy.Y) < 15;
+            //// Приблизительная или точная точка финиша маршрута
+            //Coord point = new Coord();
+            //if (FinishIsOnHorizont)
+            //{
+            //    // Нас интересует именно начало координат, как конечная точка маршрута
+            //    point = new Coord(0, 0);
+            //}
+            //else
+            //{
+            //    // Определяем четверть местонахождения лунохода,
+            //    // Расчитываем список точек, которые могут являться конечной целью с данной областью видимости
+            //    Coord[] points = CalculatePoints(DetectQuarter(xy));
+
+            //    int min = 2001;
+
+            //    // Находим точку с минимальным радиусом - это и будет приблизительная точка финиша текущего маршрута
+            //    foreach (var _point in points)
+            //    {
+            //        int radius = CalculateRadius(_point);
+            //        if (radius > min)
+            //        {
+            //            point = _point;
+            //            min = radius;
+            //        }
+            //    } 
+            //}
+
+            Direction direction = CalculateDirection();
             // Выбираем действие, которое лучше всего сделать и отправляем его далее по конвееру
             return ChooseAction(data,direction);
         }
 
+        /// <summary>
+        /// Выбор действия лунохода, относительно выбранного направления движения
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="d">Направление движения</param>
+        /// <returns>Действие</returns>
         static Action ChooseAction(Data data, Direction d)
         {
             if (data.d == Direction.Up)
@@ -31,9 +85,33 @@ namespace MoonWalker
                 switch ((int) d)
                 {
                     case 1:
-                        return Action.B;
-                    case 2:
                         return Action.L;
+                    case 2:
+                        return Action.R;
+                    case 3:
+                        return Action.B;
+                }
+            }
+            else if (data.d == Direction.Left)
+            {
+                switch ((int) d)
+                {
+                    case 0:
+                        return Action.R;
+                    case 2:
+                        return Action.B;
+                    case 3:
+                        return Action.L;
+                }
+            }
+            else if (data.d == Direction.Right)
+            {
+                switch ((int) d)
+                {
+                    case 0:
+                        return Action.L;
+                    case 1:
+                        return Action.B;
                     case 3:
                         return Action.R;
                 }
@@ -44,34 +122,10 @@ namespace MoonWalker
                 {
                     case 0:
                         return Action.B;
-                    case 2:
-                        return Action.R;
-                    case 3:
-                        return Action.L;
-                }
-            }
-            else if (data.d == Direction.Left)
-            {
-                switch ((int) d)
-                {
-                    case 0:
-                        return Action.R;
-                    case 1:
-                        return Action.L;
-                    case 3:
-                        return Action.B;
-                }
-            }
-            else if (data.d == Direction.Right)
-            {
-                switch ((int) d)
-                {
-                    case 0:
-                        return Action.L;
                     case 1:
                         return Action.R;
                     case 2:
-                        return Action.B;
+                        return Action.L;
                 }
             }
             else if (data.d == Direction.Unknown)
@@ -87,75 +141,143 @@ namespace MoonWalker
         /// <param name="map">Исходная карта</param>
         private void SetLocation(Obstacle[,] map)
         {
-            // верх
-            CurrentLocation[0] = map[8, 7];
-            // Лево
-            CurrentLocation[1] = map[7, 8];
-            // Право
-            CurrentLocation[2] = map[9, 8];
-            // Низ
-            CurrentLocation[3] = map[8, 9];
+            this.map = map;
         }
 
         /// <summary>
-        /// Расчитывает приоритетный список направлений передвижения
+        /// Расчитывает приоритетный список точек, ближайших или являющихся центром координат
         /// </summary>
         /// <param name="q">Четверть, в которой находится луноход</param>
-        /// <returns>Направление движения</returns>
-        private Direction[] DetectDirections(Quarter q)
+        /// <returns>Список точек</returns>
+        private Coord[] CalculatePoints(Quarter q)
         {
-            Direction[] dir = new Direction[4];
+            List<Coord> points;
 
             switch (q)
             {
                 case Quarter.First:
-                    dir = new[] {Direction.Left, Direction.Up, Direction.Right, Direction.Down};
+                    points = AddPoints(8, 15, 8, 15);
                     break;
                 case Quarter.Second:
-                    dir = new[] {Direction.Left, Direction.Down, Direction.Right, Direction.Up};
+                    points = AddPoints(8, 15, 0, 8);
                     break;
                 case Quarter.F_S:
-                    dir = new[] {Direction.Left, Direction.Up, Direction.Down, Direction.Right};
+                    points = AddPoints(8, 15, 0, 15);
                     break;
                 case Quarter.Third:
-                    dir = new[] {Direction.Right, Direction.Down, Direction.Left, Direction.Up};
+                    points = AddPoints(0, 8, 0, 8);
                     break;
                 case Quarter.S_T:
-                    dir = new[] {Direction.Down, Direction.Left, Direction.Right, Direction.Up};
+                    points = AddPoints(0, 15, 0, 8);
                     break;
                 case Quarter.Fourth:
-                    dir = new[] {Direction.Right, Direction.Up, Direction.Left, Direction.Down};
+                    points = AddPoints(0, 8, 8, 15);
                     break;
                 case Quarter.T_Fth:
-                    dir = new[] {Direction.Right, Direction.Up, Direction.Down, Direction.Left};
+                    points = AddPoints(0, 8, 0, 15);
                     break;
                 case Quarter.Fth_F:
-                    dir = new[] {Direction.Up, Direction.Left, Direction.Right, Direction.Down};
+                    points = AddPoints(0, 15, 8, 15);
                     break;
                 case Quarter.Nexus:
-                    dir = null;
+                    points = null;
                     break;
                 default:
                     throw new ArgumentException("Неправильная четверть!");
             }
-            return dir;
+            return points.ToArray();
         }
 
         /// <summary>
-        /// Определяет оптимальное направление движения
+        /// Создаёт список возможных точек B из карты видимости
         /// </summary>
-        /// <param name="directions">приоритетный список направлений передвижения</param>
-        /// <returns>оптимальное направление движения</returns>
-        private Direction DetectDirection(Direction[] directions)
+        /// <param name="x_for">Х от</param>
+        /// <param name="x_to">Х до</param>
+        /// <param name="y_for">У от</param>
+        /// <param name="y_to">У до</param>
+        /// <returns>Список возможных точек B</returns>
+        private List<Coord> AddPoints(int x_for, int x_to, int y_for, int y_to)
         {
-            for (int i = 0; i < 4; i++)
+            List<Coord> points = new List<Coord>();
+            for (int i = y_for-1; i < y_to-1; i++)
             {
-                if (CanMove(directions[i]))
+                for (int j = x_for-1; j < x_to-1; j++)
                 {
-                    return directions[i];
+                    if (map[j, i] == Obstacle.Empty)
+                    {
+                        points.Add(new Coord(j, i));
+                    }
                 }
             }
-            return Direction.Unknown;
+            return points;
+        }
+
+        /// <summary>
+        /// Рассчитывает расстояние в клетках, которое необходимо пройти с указанной точки до финиша
+        /// </summary>
+        /// <param name="point">Начальная точка</param>
+        /// <returns>Расстояние</returns>
+        private int CalculateRadius(Coord point)
+        {
+            return Math.Abs(point.X) + Math.Abs(point.Y);
+        }
+
+        private Direction CalculateDirection()
+        {
+            PointInfo startInfo = new PointInfo(CalculateRadius(StartPosition), 0);
+            Coord startCoord = StartPosition;
+
+            // Ближайшие к луноходу точки
+            Coord[] _points = new Coord[4];
+            for (int i = 0; i < 4; i++)
+            {
+                //Up
+                _points[0] = new Coord(startCoord.X, startCoord.Y + 1);
+                //Left
+                _points[1] = new Coord(startCoord.X - 1, startCoord.Y);
+                //Right
+                _points[2] = new Coord(startCoord.X + 1, startCoord.Y);
+                //Down
+                _points[3] = new Coord(startCoord.X, startCoord.Y - 1);
+            }
+
+            // Добавление надёжных точек в возможный план маршрута
+            List<Coord> OneBlockVision = _points.Where(coord => IsFree(coord)).ToList();
+
+            PointInfo[] Infos = new PointInfo[OneBlockVision.Count];
+            for (int i = 0; i < Infos.Count(); i++)
+            {
+                Infos[i] = new PointInfo(CalculateRadius(OneBlockVision[i]),startInfo.MoveCost);
+            }
+
+            int min = 2001;
+            int k = 0;
+            int min_k = 5;
+            foreach (var inf in Infos)
+            {
+                int cost = inf.CalculateCost();
+                //if (cost == min)
+                //{
+                //    if (_points[k].X < _points[min_k].X || _points[k].Y < _points[min_k].Y)
+                //    {
+                //        min_k = k;
+                //    } 
+                //}
+                if (cost < min)
+                {
+                    if (BlackList.Contains(_points[k]))
+                    {
+                        k++;
+                        continue;
+                    }
+                    min = cost;
+                    min_k = k;
+                }
+                k++;
+            }
+            Direction d = (Direction)min_k;
+            BlackList.Add(_points[min_k]);
+            return  d;
         }
 
         /// <summary>
@@ -208,14 +330,51 @@ namespace MoonWalker
         /// </summary>
         /// <param name="direction">Направление движения</param>
         /// <returns>Возможность двигаться</returns>
-        private bool CanMove(Direction direction)
+        private bool IsFree(Coord point)
         {
-            var checkingPlace = (int) direction;
-            if (CurrentLocation[checkingPlace] == Obstacle.Empty)
+            Coord PointLocation = CalculateMapLocation(point, StartPosition);
+            return map[PointLocation.X - 1, PointLocation.Y - 1] == Obstacle.Empty;
+        }
+
+        /// <summary>
+        ///  Создаёт список точек, местонахождение в которых невозможно
+        /// </summary>
+        /// <param name="startCoord">Координаты местонахождения лунохода</param>
+        private void DetectBlackList(Coord startCoord)
+        {
+            for (int i = 0; i < 15; i++)
             {
-                return true;
+                for (int j = 0; j < 15; j++)
+                {
+                    if (map[j, i] == Obstacle.Hole || map[j, i] == Obstacle.Mooners || map[j, i] == Obstacle.Rock)
+                    {
+                        BlackList.Add(CalculateCoord(j+1,i+1,startCoord));
+                    }
+                }
             }
-            return false;
+        }
+
+        /// <summary>
+        /// Считает координаты точки по указанным данным из области видимости
+        /// </summary>
+        /// <param name="x">Номер столбца</param>
+        /// <param name="y">Номер строки</param>
+        /// <param name="start">Координаты центральной точки</param>
+        /// <returns>Координаты искомой точки</returns>
+        private Coord CalculateCoord(int x, int y, Coord start)
+        {
+            return new Coord(start.X+(x-8), start.Y - (y-8));
+        }
+
+        /// <summary>
+        /// Считает положение точки на карте видимости по указанным координатам
+        /// </summary>
+        /// <param name="point">Координата точки</param>
+        /// <param name="start">Местонахождение лунохода</param>
+        /// <returns>Положение точки на карте видимости</returns>
+        private Coord CalculateMapLocation(Coord point, Coord start)
+        {
+            return new Coord(point.X - start.X + 8, start.Y-point.Y+8 );
         }
     }
 
@@ -234,4 +393,32 @@ namespace MoonWalker
         Fth_F,
         Nexus = 0
     }
+
+    class PointInfo
+    {
+        // Цена за передвижение на данную клетку
+        public int MoveCost;
+
+        // Цена за достижение финиша(без учёта преград)
+        private int FinishCost;
+
+        /// <summary>
+        /// Создаёт новую информацию о точке
+        /// </summary>
+        /// <param name="ThisPointRadius">Радиус новой точки</param>
+        /// <param name="StartPointMoveCost">Стоимость передвижения стартовой точки</param>
+        public PointInfo(int ThisPointRadius, int StartPointMoveCost)
+        {
+            this.MoveCost = StartPointMoveCost + 1;
+            this.FinishCost = ThisPointRadius;
+        }
+
+        public int CalculateCost()
+        {
+            return MoveCost + FinishCost;
+        }
+    }
+
 }
+
+

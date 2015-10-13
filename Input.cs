@@ -132,13 +132,13 @@ namespace MoonWalker
                 case 'U':
                     choose = 0;
                     break;
-                case 'D':
+                case 'L':
                     choose = 1;
                     break;
-                case 'L':
+                case 'R':
                     choose = 2;
                     break;
-                case 'R':
+                case 'D':
                     choose = 3;
                     break;
                 default:
