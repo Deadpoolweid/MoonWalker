@@ -2,22 +2,20 @@
 
 namespace MoonWalker
 {
-    class Program
+    internal class Program
     {
-        static void Main()
+        private static void Main()
         {
             Start:
             try
             {
-                Output output = new Output();
-                Control control = new Control();
+                var output = new Output();
+                var control = new Control();
                 output.main(control.main(Input.Core()));
                 Console.ReadKey();
             }
             catch (Exception e)
             {
-
-
                 Console.WriteLine("Возникла ошибка!");
 
                 Console.WriteLine(e.Message);

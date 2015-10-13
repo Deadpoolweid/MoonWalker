@@ -1,15 +1,14 @@
 namespace MoonWalker
 {
-    class PointInfo
+    internal class PointInfo
     {
+        // Цена за достижение финиша(без учёта преград)
+        private readonly int FinishCost;
         // Цена за передвижение на данную клетку
         public readonly int MoveCost;
 
-        // Цена за достижение финиша(без учёта преград)
-        private readonly int FinishCost;
-
         /// <summary>
-        /// Создаёт новую информацию о точке
+        ///     Создаёт новую информацию о точке
         /// </summary>
         /// <param name="thisPointRadius">Радиус новой точки</param>
         /// <param name="startPointMoveCost">Стоимость передвижения стартовой точки</param>

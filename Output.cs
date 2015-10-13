@@ -2,7 +2,7 @@
 
 namespace MoonWalker
 {
-    class Output
+    internal class Output
     {
         public void main(Action action)
         {

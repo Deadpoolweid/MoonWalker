@@ -5,21 +5,21 @@ using System.Diagnostics.Contracts;
 namespace MoonWalker
 {
     /// <summary>
-    /// Ввод данных
+    ///     Ввод данных
     /// </summary>
     public static class Input
     {
         /// <summary>
-        /// Запрашивает данные у пользователя и записывает их в хранилище
+        ///     Запрашивает данные у пользователя и записывает их в хранилище
         /// </summary>
         /// <returns>Экземпляр хранилища данных</returns>
-        static public Data Core()
+        public static Data Core()
         {
             Contract.Ensures(Contract.Result<Data>() != null);
             // Создаём экземпляр хранилища данных
-            Data data = new Data();
+            var data = new Data();
             // Считываем первую строчку
-            string[] line = ReadFirst();
+            var line = ReadFirst();
             // Сохраняем координаты из первой строчки в хранилище
             data.XY = GetCoord(line);
             // Сохраняем направление из первой строчки в хранилище
@@ -31,13 +31,13 @@ namespace MoonWalker
         }
 
         /// <summary>
-        /// Запрашивает у пользователя координаты и направление
+        ///     Запрашивает у пользователя координаты и направление
         /// </summary>
         /// <returns>Координаты лунохода</returns>
-        static string[] ReadFirst()
+        private static string[] ReadFirst()
         {
             Contract.Ensures(Contract.Result<string[]>() != null);
-            string[] rez = new string[3];
+            var rez = new string[3];
             var line = Console.ReadLine();
             if (line != null)
             {
@@ -52,10 +52,10 @@ namespace MoonWalker
         }
 
         /// <summary>
-        /// Читает строку и переводит её в массив символов
+        ///     Читает строку и переводит её в массив символов
         /// </summary>
         /// <returns>Массив символов из введённой строки</returns>
-        static IEnumerable<char> ReadNext()
+        private static IEnumerable<char> ReadNext()
         {
             Contract.Ensures(Contract.Result<IEnumerable<char>>() != null);
             var line = Console.ReadLine();
@@ -79,15 +79,15 @@ namespace MoonWalker
         }
 
         /// <summary>
-        /// Запрашивает у пользователя карту видимости
+        ///     Запрашивает у пользователя карту видимости
         /// </summary>
         /// <returns>Символьный массив карты</returns>
-        static char[,] ReadMap()
+        private static char[,] ReadMap()
         {
-            char[,] map = new char[15, 15];
+            var map = new char[15, 15];
 
-            int q = 0;
-            for (int i = 0; i < 15; i++)
+            var q = 0;
+            for (var i = 0; i < 15; i++)
             {
                 var next = ReadNext();
                 foreach (var variable in next)
@@ -105,27 +105,28 @@ namespace MoonWalker
         }
 
         /// <summary>
-        /// Получает координаты из двух строк
+        ///     Получает координаты из двух строк
         /// </summary>
         /// <param name="line">Строки с координатами</param>
         /// <returns>Координаты</returns>
-        static Coord GetCoord(string[] line)
+        private static Coord GetCoord(string[] line)
         {
             Contract.Ensures(Contract.Result<Coord>() != null);
-            Contract.Ensures(Math.Abs(int.Parse(line[0]))<1000 && Math.Abs(int.Parse(line[1]))<1000, "Значения координат находятся за пределами допустимых.\n");
-            Coord coord = new Coord(int.Parse(line[0]),int.Parse(line[1]));
+            Contract.Ensures(Math.Abs(int.Parse(line[0])) < 1000 && Math.Abs(int.Parse(line[1])) < 1000,
+                "Значения координат находятся за пределами допустимых.\n");
+            var coord = new Coord(int.Parse(line[0]), int.Parse(line[1]));
             return coord;
         }
 
         /// <summary>
-        /// Получает направление движения из строки
+        ///     Получает направление движения из строки
         /// </summary>
         /// <returns>Направление движения</returns>
-        static Direction GetDirection(string[] line)
+        private static Direction GetDirection(string[] line)
         {
             Contract.Ensures(Enum.IsDefined(typeof (Direction), Contract.Result<Direction>()));
             int choose;
-            char d = Convert.ToChar(line[2].ToUpper());
+            var d = Convert.ToChar(line[2].ToUpper());
             switch (d)
             {
                 case 'U':
@@ -144,7 +145,7 @@ namespace MoonWalker
                     choose = 4;
                     break;
             }
-            Direction p = (Direction)choose;
+            var p = (Direction) choose;
             if (p == Direction.Unknown)
             {
                 throw new ArgumentException("Неизвестное направление.");
@@ -153,16 +154,15 @@ namespace MoonWalker
         }
 
         /// <summary>
-        /// Получает карту из массива символов
+        ///     Получает карту из массива символов
         /// </summary>
         /// <param name="map">Массив символов</param>
         /// <returns>Карта</returns>
-        static Obstacle[,] GetMap(char[,] map)
+        private static Obstacle[,] GetMap(char[,] map)
         {
+            var obstacles = map;
 
-            char[,] obstacles = map;
-
-            Obstacle[,] rObstacles = new Obstacle[15,15];
+            var rObstacles = new Obstacle[15, 15];
 
             for (var i = 0; i < 15; i++)
             {
@@ -174,11 +174,11 @@ namespace MoonWalker
                     }
                     else if (obstacles[j, i] == '*')
                     {
-                        rObstacles[j,i] = Obstacle.Rock;
+                        rObstacles[j, i] = Obstacle.Rock;
                     }
                     else if (obstacles[j, i] == '0')
                     {
-                        rObstacles[j,i] = Obstacle.Hole;
+                        rObstacles[j, i] = Obstacle.Hole;
                     }
                     else if (obstacles[j, i] == '!')
                     {
@@ -186,12 +186,13 @@ namespace MoonWalker
                     }
                     else
                     {
-                        throw new ArgumentException("В области видимости присутствуют недопустимые символы: " + obstacles[j, i]);
+                        throw new ArgumentException("В области видимости присутствуют недопустимые символы: " +
+                                                    obstacles[j, i]);
                     }
                 }
             }
 
             return rObstacles;
         }
-     }
+    }
 }

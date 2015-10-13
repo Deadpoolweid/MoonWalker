@@ -3,23 +3,23 @@
     public class Data
     {
         /// <summary>
-        /// Координаты лунохода
-        /// </summary>
-        public Coord XY;
-
-        /// <summary>
-        /// Карта луны(в пределах видимости)
-        /// </summary>
-        public Obstacle[,] Map = new Obstacle[15,15];
-
-        /// <summary>
-        /// Направление движения
+        ///     Направление движения
         /// </summary>
         public Direction D;
+
+        /// <summary>
+        ///     Карта луны(в пределах видимости)
+        /// </summary>
+        public Obstacle[,] Map = new Obstacle[15, 15];
+
+        /// <summary>
+        ///     Координаты лунохода
+        /// </summary>
+        public Coord XY;
     }
 
     /// <summary>
-    /// Всевозможные варианты объектов на карте
+    ///     Всевозможные варианты объектов на карте
     /// </summary>
     public enum Obstacle
     {
@@ -30,7 +30,7 @@
     }
 
     /// <summary>
-    /// Направление движения лунохода
+    ///     Направление движения лунохода
     /// </summary>
     public enum Direction
     {
@@ -42,7 +42,7 @@
     }
 
     /// <summary>
-    /// Действие лунохода (Вперёд, назад, поворот направо, поворот налево)
+    ///     Действие лунохода (Вперёд, назад, поворот направо, поворот налево)
     /// </summary>
     public enum Action
     {
