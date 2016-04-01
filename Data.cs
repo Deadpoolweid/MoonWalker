@@ -1,10 +1,7 @@
 ﻿namespace MoonWalker
 {
-<<<<<<< HEAD
     //test in
-=======
     //test out
->>>>>>> origin/master
     public class Data
     {
         /// <summary>
